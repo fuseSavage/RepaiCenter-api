@@ -1,8 +1,8 @@
 module.exports = {
-    insert_garage: `INSERT INTO garage 
+  insert_garage: `INSERT INTO garage 
     (
+        garageID,
         party,
-        userID,
         password,
         user_name,
         garage_name,
@@ -21,5 +21,37 @@ module.exports = {
         on_time,
         off_time,
         tel
-    ) VALUES (?)`
-}
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+
+  insert_member: `INSERT INTO member 
+    (
+        party,
+        member_tel,
+        member_name,
+        member_ads,
+        shop_register,
+        registration_date
+    ) VALUES (?)`,
+
+  insert_detail: `INSERT INTO repairdetails 
+    (
+        garageID,
+        member_tel,
+        device_type,
+        device,
+        details,
+        repair_date,
+        status,
+        price
+    ) VALUES (?,?,?,?,?,?,?,?)`,
+
+  insert_reported: `INSERT INTO reported
+  (
+    party,
+    user_report,
+    name,
+    report_detail,
+    report_tel,
+    report_date
+  ) VALUES (?)`
+};

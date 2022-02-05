@@ -1,19 +1,43 @@
 const express = require("express");
 
 const {
-  callGetallMember,
-  callRegisterMember,
-  callGetMember,
-  callDeleteMember,
+  callRepairDetail,
+  callGetallDetail,
+  callGetByMember,
+  callGetByGarage,
 } = require("../services/funcCallback");
 const responseCode = require("../configs/responseCode");
 
 const router = express.Router();
 
-// Get All Member
+// Insert Member
+router.post("/insert", async (request, response, next) => {
+  try {
+    let data = request.body;
+
+    callRepairDetail(data, function (err, datas, status) {
+      if (status == responseCode.SUCCESS) {
+        response.json({
+          code: 200,
+          message: "insert success",
+          data: datas,
+        });
+      } else {
+        response.json({
+          code: 204,
+          message: "sql is not working!!",
+        });
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+// Get All Detail
 router.get("/all", (request, response, next) => {
   try {
-    callGetallMember(function (err, datas, status) {
+    callGetallDetail( function (err, datas, status) {
       //   console.log(status);
       if (status == responseCode.SUCCESS) {
         response.json({
@@ -22,11 +46,6 @@ router.get("/all", (request, response, next) => {
           total: datas.length,
           data: datas,
         });
-      } else {
-        response.json({
-          code: 400,
-          message: "nodata",
-        });
       }
     });
   } catch (err) {
@@ -34,36 +53,12 @@ router.get("/all", (request, response, next) => {
   }
 });
 
-// Insert Member
-router.post("/insert", async (request, response, next) => {
-  try {
-    let data = request.body;
-
-    callRegisterMember(data, function (err, datas, status) {
-      if (status == responseCode.SUCCESS) {
-        response.json({
-          code: 200,
-          message: "insert member success",
-          data: datas,
-        });
-      } else {
-        response.json({
-          code: 204,
-          message: "มี member นี้แล้ว",
-        });
-      }
-    });
-  } catch (err) {
-    console.log(err);
-  }
-});
-
-// Get One Member
-router.get("/getmember", (request, response, next) => {
+// Get By Member
+router.get("/getbymember", (request, response, next) => {
   let data = request.body;
   // console.log(data)
   try {
-    callGetMember(data, function (err, datas, status) {
+    callGetByMember(data, function (err, datas, status) {
       if (status == responseCode.SUCCESS) {
         response.json({
           code: 200,
@@ -74,7 +69,7 @@ router.get("/getmember", (request, response, next) => {
       } else {
         response.json({
           code: 500,
-          message: "ไม่มี UsesID นี้อยู่ในตาราง",
+          message: "ไม่มี member นี้อยู่ในตาราง",
         });
       }
     });
@@ -83,23 +78,23 @@ router.get("/getmember", (request, response, next) => {
   }
 });
 
-// Delete Member
-router.delete("/delete", (request, response, next) => {
+// Get By Member
+router.get("/getbygarage", (request, response, next) => {
   let data = request.body;
+  // console.log(data)
   try {
-    callDeleteMember(data, function (err, datas, status) {
-      // console.log(status)
+    callGetByGarage(data, function (err, datas, status) {
       if (status == responseCode.SUCCESS) {
         response.json({
           code: 200,
-          message: "Delete success",
+          message: "get data success",
           total: datas.length,
           data: datas,
         });
       } else {
         response.json({
-          code: 400,
-          message: "ลบไม่ได้ เนื่องจากมี member นี้ในประวัติการซ่อม",
+          code: 500,
+          message: "ไม่มี garage นี้อยู่ในตาราง",
         });
       }
     });
@@ -107,5 +102,6 @@ router.delete("/delete", (request, response, next) => {
     console.log(err);
   }
 });
+
 
 module.exports = router;

@@ -1,10 +1,11 @@
 const express = require("express");
 
-const { registerGarage } = require("../services/database");
 const {
   callRegisterGarage,
   callGetallGarage,
   callGetGarage,
+  callUpdateGarage,
+  callDeleteGarage,
 } = require("../services/funcCallback");
 const responseCode = require("../configs/responseCode");
 
@@ -14,6 +15,7 @@ const router = express.Router();
 router.post("/insert", async (request, response, next) => {
   try {
     let data = request.body;
+    // console.log(request.body)
 
     callRegisterGarage(data, function (err, datas, status) {
       if (status == responseCode.SUCCESS) {
@@ -53,7 +55,7 @@ router.get("/all", (request, response, next) => {
   }
 });
 
-// Get All Garage
+// Get One Garage
 router.get("/getgarage", (request, response, next) => {
   let data = request.body;
   // console.log(data)
@@ -70,6 +72,58 @@ router.get("/getgarage", (request, response, next) => {
         response.json({
           code: 500,
           message: "ไม่มี UsesID นี้อยู่ในตาราง",
+        });
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+// Update Garage
+router.post("/update", (request, response, next) => {
+  let data = request.body;
+  // console.log(data)
+  try {
+    callUpdateGarage(data, function (err, datas, status) {
+      // console.log(status)
+      if (status == responseCode.SUCCESS) {
+        response.json({
+          code: 200,
+          message: "Update garage success",
+          total: datas.length,
+          data: datas,
+        });
+      } else {
+        response.json({
+          code: 400,
+          message: "Update garage not success",
+        });
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+// Delete Garage
+router.delete("/delete", (request, response, next) => {
+  let data = request.body;
+  try {
+    callDeleteGarage(data, function (err, datas, status) {
+      // console.log(status)
+      if (status == responseCode.SUCCESS) {
+        response.json({
+          code: 200,
+          message: "Delete garage success",
+          total: datas.length,
+          data: datas,
+        });
+      } else {
+        response.json({
+          code: 400,
+          message:
+            "Delete garage not success มี garageID นี้ อยู่ในประวัติการซ่อมอยู่",
         });
       }
     });

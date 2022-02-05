@@ -1,9 +1,8 @@
 module.exports = {
   garage: `CREATE TABLE garage(
-        garageID int NOT NULL AUTO_INCREMENT,
+      garageID varchar(255),
         party varchar(100),
-        userID varchar(255),
-        password int NOT NULL,
+        password varchar(100),
         user_name varchar(255),
         garage_name varchar(255),
         email varchar(255),
@@ -17,7 +16,7 @@ module.exports = {
         province varchar(100),
         pos_code varchar(100),
         address_map varchar(255),
-        registration_date DATETIME,
+        registration_date varchar(100),
         on_time varchar(100),
         off_time varchar(100),
         tel varchar(30),
@@ -26,36 +25,40 @@ module.exports = {
   )`,
 
   member: `CREATE TABLE member(
-        memberID int NOT NULL AUTO_INCREMENT,
+      member_tel varchar(100),
         party varchar(100),
-        member_tel varchar(100),
         member_name varchar(255),
         member_ads varchar(255),
         shop_register varchar(255),
-        registration_date DATETIME,
+        registration_date varchar(100),
 
-        PRIMARY KEY (memberID)
+        PRIMARY KEY (member_tel)
   )`,
 
   repairDetails: `CREATE TABLE repairdetails(
         detailsID int NOT NULL AUTO_INCREMENT,
-        shop_repair varchar(255),
+        garageID varchar(255),
         member_tel varchar(100), 
         device_type varchar(255),
         device varchar(255),
         details varchar(255),
-        repair_date DATETIME,
+        repair_date varchar(255),
         status varchar(100),
+        price int(10),
 
-        PRIMARY KEY (detailsID)
-        
+        PRIMARY KEY (detailsID),
+        FOREIGN KEY (member_tel) REFERENCES member(member_tel),
+        FOREIGN KEY (garageID) REFERENCES garage(garageID)
   )`,
 
   reported: `CREATE TABLE reported(
         reportID int NOT NULL AUTO_INCREMENT,
         party varchar(100),
+        user_report varchar(255),
+        name varchar(255),
         report_detail varchar(255),
-        report_date DATETIME,
+        report_tel varchar(50),
+        report_date varchar(100),
 
         PRIMARY KEY (reportID)
   )`,

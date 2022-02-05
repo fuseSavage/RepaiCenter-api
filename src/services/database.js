@@ -1,6 +1,8 @@
 const { query } = require("express");
 const mysql = require("mysql");
 
+const bcrypt = require("bcrypt");
+
 const constants = require("../configs/constants");
 const responseCode = require("../configs/responseCode");
 
@@ -19,6 +21,7 @@ const db = mysql.createConnection({
 // Import SQL Commmand
 const createTable = require("../sql/createTable");
 const insertInto = require("../sql/insertInto");
+const { exit } = require("yargs");
 
 // DataBase Connected
 db.connect((err) => {
@@ -84,10 +87,10 @@ db.connect((err) => {
 });
 
 // insert garage in RepairCenterDB
-function registerGarage(data, callback) {
+async function registerGarage(data, callback) {
   values = [
+    data.garageID,
     data.party,
-    data.userID,
     data.password,
     data.user_name,
     data.garage_name,
@@ -107,35 +110,126 @@ function registerGarage(data, callback) {
     data.off_time,
     data.tel,
   ];
+
+  encryptedPassword = await bcrypt.hash(data.password, 10);
+  // console.log("test", encryptedPassword);
+
+  let garageType = JSON.stringify(data.garage_type);
+  let adsMap = JSON.stringify(data.address_map);
+  let timeElapsed = Date.now();
+  let today = new Date(timeElapsed);
+  let dateNow = today.toLocaleDateString();
+
   try {
-    let sql = `SELECT userID FROM garage`;
+    let sql = `SELECT garageID FROM garage`;
     db.query(sql, (error, result) => {
       if (error) {
-        console.log("===>>> Error", err);
+        console.log("===>>> Error", error);
         ``;
       } else {
         // console.log(result)
-        let listUID = [];
+        let listGID = [];
         result.forEach((doc) => {
-          listUID.push(doc.userID);
+          listGID.push(doc.garageID);
         });
 
-        const checkUID = listUID.includes(data.userID);
-        if (checkUID === false) {
-          db.query(insertInto.insert_garage, [values], (err, result) => {
-            if (err) {
-              return callback(err);
-            } else {
-              callback(null, values, responseCode.SUCCESS);
-              // console.log("5555555");
+        const checkGID = listGID.includes(data.garageID);
+        if (checkGID === false) {
+          db.query(
+            insertInto.insert_garage,
+            [
+              data.garageID,
+              data.party,
+              encryptedPassword,
+              data.user_name,
+              data.garage_name,
+              data.email,
+              garageType,
+              data.address_number,
+              data.moo,
+              data.alley,
+              data.road,
+              data.sub_district,
+              data.district,
+              data.province,
+              data.pos_code,
+              adsMap,
+              dateNow,
+              data.on_time,
+              data.off_time,
+              data.tel,
+            ],
+            (err, result) => {
+              if (err) {
+                return callback(err);
+                // console.log(err);
+              } else {
+                callback(null, values, responseCode.SUCCESS);
+                // console.log("insert success");
+              }
             }
-          });
+          );
         } else {
           // console.log("มี userID นี้แล้ว");
           callback(null, result, responseCode.SUCCESS_NO_CONTENT);
         }
       }
     });
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+// Login user
+async function loginUser(data, callback) {
+  // console.log(data);
+  try {
+    if (data.garageID && data.password) {
+      db.query(
+        "SELECT * FROM garage WHERE garageID = ?",
+        [data.garageID],
+        (error, results, fields) => {
+          if (error) {
+            console.log("error =>", error);
+          }
+
+          if (results.length != 0) {
+            // console.log(results[0].password);
+            if (bcrypt.compareSync(data.password, results[0].password)) {
+              console.log("Successful");
+              callback(null, results[0], responseCode.SUCCESS);
+            } else {
+              // console.log("Incorrect Email and/or Password!");
+              callback(null, null, responseCode.SUCCESS_NO_CONTENT);
+            }
+          } else {
+            callback(null, null, responseCode.ERROR_BAD_REQUEST);
+          }
+        }
+      );
+    } else {
+      console.log("Please enter Username and Password!");
+    }
+
+    // console.log(sql);
+    //   db.query(sql, async (err, rows) => {
+    //     // console.log(rows);
+    //     if (err) {
+    //       callback(err);
+    //     } else {
+    //       if (
+    //         data.garageID = rows.garageID &&
+    //         data.password == (await bcrypt.compare(data.password, rows.password))
+    //       ) {
+    //         console.log(rows.password);
+    //         callback(null, rows, responseCode.SUCCESS);
+    //       } else {
+    //         console.log("rows", rows.password);
+    //         callback(null, null, responseCode.SUCCESS_NO_CONTENT);
+    //       }
+    //     }
+
+    //   });
   } catch (err) {
     console.log(err);
   }
@@ -156,7 +250,7 @@ function getAllGarage(data, callback) {
 // get one Garage
 function getGarage(data, callback) {
   // console.log(data.userID);
-  let sql = `SELECT * FROM garage WHERE userID = "${data.userID}"`;
+  let sql = `SELECT * FROM garage WHERE garageID = "${data.garageID}"`;
   try {
     db.query(sql, function (err, rows) {
       if (err) return callback(err);
@@ -167,36 +261,293 @@ function getGarage(data, callback) {
   }
 }
 
-// insert Product
-async function insertProduct(data) {
-  console.log("register ", data);
+// Update garage
+function updateGarage(data, callback) {
+  let sql = `UPDATE garage SET 
+    garageID = "${data.garageID}",
+    user_name = "${data.user_name}",
+    garage_name = "${data.garage_name}",
+    email = "${data.email}",
+    garage_type = "${data.garage_type}",
+    address_number = "${data.address_number}",
+    moo = "${data.moo}",
+    alley = "${data.alley}",
+    road = "${data.road}",
+    sub_district = "${data.sub_district}",
+    district = "${data.district}",
+    province = "${data.province}",
+    pos_code = "${data.pos_code}",
+    address_map = "${data.address_map}",
+    on_time = "${data.on_time}",
+    off_time = "${data.off_time}",
+    tel = "${data.tel}" WHERE garageID = "${data.garageID}"
+    `;
   try {
-    db.query("SELECT * FROM repairapi", (err, result) => {
-      if (err) {
-        console.log("===>>> Error");
+    // console.log(sql, data.garageID)
+
+    db.query(sql, (error, result) => {
+      if (error) {
+        // console.log("error",error);
+        callback(null, result, responseCode.ERROR_BAD_REQUEST);
       } else {
-        console.log("===>> suss", result);
+        // console.log("good");
+        callback(null, data, responseCode.SUCCESS);
       }
     });
+  } catch (err) {
+    console.log(err);
+  }
+}
 
-    return { status: responseCode.SUCCESS };
+// Delete Garage
+function deleteGarage(data, callback) {
+  // console.log(data)
+  let sql = `DELETE FROM garage WHERE garageID = "${data.garageID}"`;
+  try {
+    // console.log(sql, data.garageID)
+
+    db.query(sql, (error, result) => {
+      if (error) {
+        // console.log("error", error);
+        callback(null, result, responseCode.ERROR_BAD_REQUEST);
+      } else {
+        // console.log("good");
+        callback(null, data, responseCode.SUCCESS);
+      }
+    });
   } catch (err) {
     console.log(err);
   }
 }
 
 // Get All Member
-async function getallMember() {
+function getAllMember(data, callback) {
   try {
-    db.query("SELECT * FROM repairapi", (err, result) => {
-      if (err) {
-        console.log("===>>> Error");
+    db.query("SELECT * FROM member", function (err, rows) {
+      if (err) return callback(err);
+      callback(null, rows, responseCode.SUCCESS);
+    });
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+// insert Member register
+function registerMember(data, callback) {
+  let timeElapsed = Date.now();
+  let today = new Date(timeElapsed);
+  let dateNow = today.toLocaleDateString();
+  values = [
+    data.party,
+    data.member_tel,
+    data.member_name,
+    data.member_ads,
+    data.shop_register,
+    dateNow,
+  ];
+  try {
+    let sql = `SELECT member_tel FROM member`;
+    db.query(sql, (error, result) => {
+      if (error) {
+        console.log("===>>> Error", error);
+        ``;
       } else {
-        console.log("===>> suss", result);
+        // console.log(result)
+        let listUID = [];
+        result.forEach((doc) => {
+          listUID.push(doc.member_tel);
+        });
+
+        const check = listUID.includes(data.member_tel);
+        if (check === false) {
+          db.query(insertInto.insert_member, [values], (err, result) => {
+            if (err) {
+              return callback(err);
+            } else {
+              callback(null, values, responseCode.SUCCESS);
+              console.log("insert success");
+            }
+          });
+        } else {
+          console.log("มี userID นี้แล้ว");
+          callback(null, result, responseCode.SUCCESS_NO_CONTENT);
+        }
       }
     });
+  } catch (err) {
+    console.log(err);
+  }
+}
 
-    return { status: responseCode.SUCCESS };
+// get one Member
+function getMember(data, callback) {
+  // console.log(data.userID);
+  let sql = `SELECT * FROM member WHERE member_tel = "${data.member_tel}"`;
+  try {
+    db.query(sql, function (err, rows, status) {
+      if (err) return callback(err);
+      // console.log(rows)
+      callback(null, rows, responseCode.SUCCESS);
+    });
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+// Delete Member
+function deleteMember(data, callback) {
+  // console.log(data)
+  let sql = `DELETE FROM member WHERE member_tel = "${data.member_tel}"`;
+  try {
+    // console.log(sql, data.garageID)
+
+    db.query(sql, (error, result) => {
+      if (error) {
+        // console.log("err", error);
+        callback(null, result, responseCode.ERROR_BAD_REQUEST);
+      } else {
+        // console.log("good");
+        callback(null, data, responseCode.SUCCESS);
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+// insert RepairDetail
+function repairDetail(data, callback) {
+  let timeElapsed = Date.now();
+  let today = new Date(timeElapsed);
+  let dateNow = today.toLocaleDateString();
+
+  let details = JSON.stringify(data.detail);
+
+  // console.log(details);
+
+  try {
+    db.query(
+      insertInto.insert_detail,
+      [
+        data.garageID,
+        data.member_tel,
+        data.device_type,
+        data.device,
+        details,
+        dateNow,
+        data.status,
+        data.price,
+      ],
+      (err, result) => {
+        if (err) {
+          callback(null, null, responseCode.SUCCESS_NO_CONTENT);
+          console.log("err", err);
+        } else {
+          callback(null, null, responseCode.SUCCESS);
+          // console.log("insert success");
+        }
+      }
+    );
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+// Get All Datail
+function getAllDetail(data, callback) {
+  try {
+    let sql = `SELECT * FROM repairdetails AS a 
+    INNER JOIN member AS b ON a.member_tel = b.member_tel 
+    INNER JOIN garage AS c ON a.garageID = c.garageID`;
+    db.query(sql, function (err, rows) {
+      // if (err) return callback(err);
+      if (err) console.log(err);
+      callback(null, rows, responseCode.SUCCESS);
+    });
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+// Get By Member
+function getByMember(data, callback) {
+  try {
+    let memberTel = data.member_tel;
+    // console.log(memberTel)
+    let sql = `SELECT * FROM repairdetails AS a 
+    INNER JOIN member AS b ON a.member_tel = b.member_tel 
+    INNER JOIN garage AS c ON a.garageID = c.garageID 
+    WHERE a.member_tel = ${memberTel}`;
+
+    db.query(sql, function (err, rows) {
+      if (err) return callback(err);
+      // if (err) console.log(err);
+      callback(null, rows, responseCode.SUCCESS);
+    });
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+// Get By Garage
+function getByGarage(data, callback) {
+  try {
+    let garage = data.garageID;
+    // console.log(garage)
+    let sql = `SELECT * FROM repairdetails AS a 
+    INNER JOIN member AS b ON a.member_tel = b.member_tel 
+    INNER JOIN garage AS c ON a.garageID = c.garageID 
+    WHERE a.garageID = "${garage}"`;
+
+    db.query(sql, function (err, rows) {
+      if (err) return callback(err);
+      // if (err) console.log(err);
+      callback(null, rows, responseCode.SUCCESS);
+    });
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+// insert Report
+function insertReport(data, callback) {
+  let timeElapsed = Date.now();
+  let today = new Date(timeElapsed);
+  let dateNow = today.toLocaleDateString();
+
+  let values = [
+    data.party,
+    data.user_report,
+    data.name,
+    data.report_detail,
+    data.report_tel,
+    dateNow,
+  ];
+
+  // console.log(data)
+
+  try {
+    db.query(insertInto.insert_reported, [values], (err, result) => {
+      if (err) {
+        callback(null, null, responseCode.SUCCESS_NO_CONTENT);
+        console.log("err", err);
+      } else {
+        callback(null, null, responseCode.SUCCESS);
+        // console.log("insert success");
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+// Get All Report
+function getReport(data, callback) {
+  try {
+    db.query("SELECT * FROM reported", function (err, rows) {
+      if (err) return callback(err);
+      callback(null, rows, responseCode.SUCCESS);
+    });
   } catch (err) {
     console.log(err);
   }
@@ -206,6 +557,17 @@ module.exports = {
   registerGarage,
   getAllGarage,
   getGarage,
-  insertProduct,
-  getallMember,
+  updateGarage,
+  deleteGarage,
+  getAllMember,
+  registerMember,
+  getMember,
+  deleteMember,
+  repairDetail,
+  getAllDetail,
+  getByMember,
+  getByGarage,
+  insertReport,
+  getReport,
+  loginUser,
 };

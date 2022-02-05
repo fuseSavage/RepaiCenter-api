@@ -2,8 +2,13 @@ const express = require('express')
 const responseCode = require('../configs/responseCode');
 
 const router = express.Router()
+const authentication = require('./authentication')
 const member = require('./member');
 const garage = require('./garage');
+const repairdetail = require('./repairdetail')
+const report = require('./report')
+
+const middleware = require('../middlewares/authentication')
 
 
 router.get('/test',(req,res)=>{
@@ -14,7 +19,10 @@ router.get('/test',(req,res)=>{
     console.log('test')
 })
 
-router.use(member)
-router.use(garage)
+router.use(authentication)
+router.use(middleware, member)
+router.use(middleware, garage)
+router.use(middleware, repairdetail)
+router.use(middleware, report)
 
 module.exports = router
