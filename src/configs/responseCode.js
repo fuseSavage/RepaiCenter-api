@@ -1,6 +1,9 @@
 module.exports = {
     SUCCESS: 200,
     SUCCESS_NO_CONTENT: 204,
+    SUCCESS_NO_APPROVE: 205,
+    SUCCESS_ACCEPTED: 202,
+
   
   
     ERROR_BAD_REQUEST: 400,

@@ -80,6 +80,17 @@ db.connect((err) => {
       } else {
         console.log("database there is already this table.");
       }
+
+      // Check Table reported in DataBase
+      if (allTable.includes("spare") == false) {
+        // Create Table
+        db.query(createTable.spare, (err) => {
+          if (err) throw err;
+          console.log("Created table spare successfully.");
+        });
+      } else {
+        console.log("database there is already this table.");
+      }
     });
   } catch (err) {
     console.log(err);
@@ -109,7 +120,10 @@ async function registerGarage(data, callback) {
     data.on_time,
     data.off_time,
     data.tel,
+    data.confirmation
   ];
+
+  // console.log(data.address_map)
 
   encryptedPassword = await bcrypt.hash(data.password, 10);
   // console.log("test", encryptedPassword);
@@ -158,6 +172,7 @@ async function registerGarage(data, callback) {
               data.on_time,
               data.off_time,
               data.tel,
+              data.confirmation
             ],
             (err, result) => {
               if (err) {
@@ -196,8 +211,21 @@ async function loginUser(data, callback) {
           if (results.length != 0) {
             // console.log(results[0].password);
             if (bcrypt.compareSync(data.password, results[0].password)) {
-              console.log("Successful");
-              callback(null, results[0], responseCode.SUCCESS);
+              // console.log("Successful", results[0].confirmation);
+              if (results[0].confirmation === 'approve') {
+                callback(null, results[0], responseCode.SUCCESS);
+              } else {
+                if (results[0].garageID === "admin") {
+                  // console.log("Successful", results[0].garageID);
+                  callback(null, results[0], responseCode.SUCCESS_ACCEPTED);
+                } else {
+                  //  console.log("test", results[0].garageID);
+                   callback(null, null, responseCode.SUCCESS_NO_APPROVE);
+                }
+                
+               
+              }
+              
             } else {
               // console.log("Incorrect Email and/or Password!");
               callback(null, null, responseCode.SUCCESS_NO_CONTENT);
@@ -238,7 +266,19 @@ async function loginUser(data, callback) {
 // get All Garage
 function getAllGarage(data, callback) {
   try {
-    db.query("SELECT * FROM garage", function (err, rows) {
+    db.query(`SELECT * FROM garage WHERE confirmation = 'approve' `, function (err, rows) {
+      if (err) return callback(err);
+      callback(null, rows, responseCode.SUCCESS);
+    });
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+// get All Garage
+function getGarageAll(data, callback) {
+  try {
+    db.query(`SELECT * FROM garage `, function (err, rows) {
       if (err) return callback(err);
       callback(null, rows, responseCode.SUCCESS);
     });
@@ -339,6 +379,7 @@ function registerMember(data, callback) {
   let dateNow = today.toLocaleDateString();
   values = [
     data.party,
+    data.garageID,
     data.member_tel,
     data.member_name,
     data.member_ads,
@@ -394,6 +435,22 @@ function getMember(data, callback) {
   }
 }
 
+// get one Member By GarageName
+function getMemberByGarage(data, callback) {
+  // console.log(data.userID);
+  let sql = `SELECT * FROM member WHERE garageID = "${data.userId}"`;
+  try {
+    db.query(sql, function (err, rows, status) {
+      if (err) return callback(err);
+      // console.log(rows)
+      callback(null, rows, responseCode.SUCCESS);
+    });
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+
 // Delete Member
 function deleteMember(data, callback) {
   // console.log(data)
@@ -417,13 +474,13 @@ function deleteMember(data, callback) {
 
 // insert RepairDetail
 function repairDetail(data, callback) {
-  let timeElapsed = Date.now();
-  let today = new Date(timeElapsed);
-  let dateNow = today.toLocaleDateString();
+  // let timeElapsed = Date.now();
+  // let today = new Date(timeElapsed);
+  // let dateNow = today.toLocaleDateString();
 
-  let details = JSON.stringify(data.detail);
+  // let details = JSON.stringify(data.detail);
 
-  // console.log(details);
+  // console.log(data);
 
   try {
     db.query(
@@ -432,11 +489,18 @@ function repairDetail(data, callback) {
         data.garageID,
         data.member_tel,
         data.device_type,
-        data.device,
-        details,
-        dateNow,
+        data.car_number,
+        data.car_province,
+        data.brand,
+        data.model,
+        data.kilo_number,
+        data.repair_details,
+        data.repair_date,
+        data.spare_parts_list,
         data.status,
         data.price,
+        data.status_payment,
+        data.equipment,
       ],
       (err, result) => {
         if (err) {
@@ -448,6 +512,66 @@ function repairDetail(data, callback) {
         }
       }
     );
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+//insert Spare Detail
+function spareDetail(data, callback) {
+  console.log(data);
+  try {
+    db.query(
+      `INSERT INTO spare ( detailsID, spare, member_tel) VALUES (${data.detailsID}, '${data.spare}' , '${data.memberTel}')`,
+      (err, result) => {
+        if (err) {
+          console.log("error", err);
+          callback(null, null, responseCode.SUCCESS_NO_CONTENT);
+
+          console.log("err", err);
+        } else {
+          callback(null, null, responseCode.SUCCESS);
+          // console.log("insert success");
+        }
+      }
+    );
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+// Get Spare By GarageID
+function getSpareByDetailID(data, callback) {
+  try {
+    // console.log(detailID)
+    let sql = `SELECT * FROM spare WHERE detailsID = ${data.detailID}`;
+
+    db.query(sql, function (err, rows) {
+      if (err) return callback(err);
+      // if (err) console.log(err);
+      callback(null, rows, responseCode.SUCCESS);
+    });
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+//Delete Spare
+function deleteSpare(data, callback) {
+  console.log(data);
+  let sql = `DELETE FROM spare WHERE spareID = '${data.id}'`;
+  try {
+    // console.log(sql, data.garageID)
+
+    db.query(sql, (error, result) => {
+      if (error) {
+        console.log("err", error);
+        callback(null, result, responseCode.ERROR_BAD_REQUEST);
+      } else {
+        // console.log("good");
+        callback(null, data, responseCode.SUCCESS);
+      }
+    });
   } catch (err) {
     console.log(err);
   }
@@ -477,7 +601,7 @@ function getByMember(data, callback) {
     let sql = `SELECT * FROM repairdetails AS a 
     INNER JOIN member AS b ON a.member_tel = b.member_tel 
     INNER JOIN garage AS c ON a.garageID = c.garageID 
-    WHERE a.member_tel = ${memberTel}`;
+    WHERE a.member_tel = ${memberTel} ORDER BY a.repair_date ASC `;
 
     db.query(sql, function (err, rows) {
       if (err) return callback(err);
@@ -492,12 +616,32 @@ function getByMember(data, callback) {
 // Get By Garage
 function getByGarage(data, callback) {
   try {
-    let garage = data.garageID;
+    let garageID = data.garageID;
     // console.log(garage)
     let sql = `SELECT * FROM repairdetails AS a 
     INNER JOIN member AS b ON a.member_tel = b.member_tel 
     INNER JOIN garage AS c ON a.garageID = c.garageID 
-    WHERE a.garageID = "${garage}"`;
+    WHERE a.garageID = "${garageID}" ORDER BY repair_date ASC`;
+
+    db.query(sql, function (err, rows) {
+      if (err) return callback(err);
+      // if (err) console.log(err);
+      callback(null, rows, responseCode.SUCCESS);
+    });
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+// Get By GarageID
+function getByDetailID(data, callback) {
+  try {
+    let detailID = data.detailID;
+    // console.log(detailID)
+    let sql = `SELECT * FROM repairdetails AS a 
+    INNER JOIN member AS b ON a.member_tel = b.member_tel 
+    INNER JOIN garage AS c ON a.garageID = c.garageID 
+    WHERE a.detailsID = ${detailID}`;
 
     db.query(sql, function (err, rows) {
       if (err) return callback(err);
@@ -518,7 +662,7 @@ function insertReport(data, callback) {
   let values = [
     data.party,
     data.user_report,
-    data.name,
+    data.username,
     data.report_detail,
     data.report_tel,
     dateNow,
@@ -553,9 +697,34 @@ function getReport(data, callback) {
   }
 }
 
+// Update Detail
+function updateDetail(data, callback) {
+  let sql = `UPDATE repairdetails SET 
+    status = "${data.status}",
+    price = "${data.sumPrice}",
+    status_payment = "${data.status_payment}" WHERE detailsID = "${data.detailsID}"
+    `;
+  try {
+    // console.log(sql, data.garageID)
+
+    db.query(sql, (error, result) => {
+      if (error) {
+        // console.log("error",error);
+        callback(null, result, responseCode.ERROR_BAD_REQUEST);
+      } else {
+        // console.log("good");
+        callback(null, data, responseCode.SUCCESS);
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+}
+
 module.exports = {
   registerGarage,
   getAllGarage,
+  getGarageAll,
   getGarage,
   updateGarage,
   deleteGarage,
@@ -570,4 +739,10 @@ module.exports = {
   insertReport,
   getReport,
   loginUser,
+  getByDetailID,
+  spareDetail,
+  getSpareByDetailID,
+  deleteSpare,
+  updateDetail,
+  getMemberByGarage,
 };

@@ -20,12 +20,14 @@ module.exports = {
         registration_date,
         on_time,
         off_time,
-        tel
-    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+        tel,
+        confirmation
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
 
   insert_member: `INSERT INTO member 
     (
         party,
+        garageID,
         member_tel,
         member_name,
         member_ads,
@@ -36,14 +38,21 @@ module.exports = {
   insert_detail: `INSERT INTO repairdetails 
     (
         garageID,
-        member_tel,
+        member_tel, 
         device_type,
-        device,
-        details,
+        car_number,
+        car_province,
+        brand,
+        model,
+        kilo_number,
+        repair_details,
         repair_date,
+        spare_parts_list,
         status,
-        price
-    ) VALUES (?,?,?,?,?,?,?,?)`,
+        price,
+        status_payment,
+        equipment
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
 
   insert_reported: `INSERT INTO reported
   (
@@ -53,5 +62,13 @@ module.exports = {
     report_detail,
     report_tel,
     report_date
-  ) VALUES (?)`
+  ) VALUES (?)`,
+
+  insert_spare: `INSERT INTO spare
+  (
+    detailsID,
+    spares,
+    member_tel
+
+  ) VALUES (?, ?, ?)`,
 };

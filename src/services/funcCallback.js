@@ -16,7 +16,14 @@ const {
   getByGarage,
   insertReport,
   getReport,
-  loginUser
+  loginUser,
+  getByDetailID,
+  spareDetail,
+  getSpareByDetailID,
+  deleteSpare,
+  updateDetail,
+  getMemberByGarage,
+  getGarageAll
 } = require("./database");
 
 //fucntion callback Insert Garage
@@ -56,6 +63,21 @@ async function callLoginUser(data, callback) {
 async function callGetallGarage(callback) {
   try {
     getAllGarage("result", function (err, result) {
+      if (err || !result.length) return callback("error or no results");
+
+      result = result.map((obj) => obj);
+
+      callback(null, result, responseCode.SUCCESS);
+    });
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+//fucntion callback get all garage
+async function callGetGarageAll(callback) {
+  try {
+    getGarageAll("result", function (err, result) {
       if (err || !result.length) return callback("error or no results");
 
       result = result.map((obj) => obj);
@@ -158,6 +180,22 @@ async function callGetMember(data, callback) {
   }
 }
 
+//fucntion callback get one Member
+async function callGetMemberByGarage(data, callback) {
+  // console.log(data)
+  try {
+    getMemberByGarage(data, function (err, result, status) {
+      if (err || !result.length) return callback("error or no results");
+
+      result = result.map((obj) => obj);
+
+      callback(null, result, status);
+    });
+  } catch (err) {
+    console.log(err);
+  }
+}
+
 //fucntion callback Delete Member
 async function callDeleteMember(data, callback) {
   // console.log(data)
@@ -172,7 +210,7 @@ async function callDeleteMember(data, callback) {
   }
 }
 
-//fucntion callback Insert Member
+//fucntion callback detail
 async function callRepairDetail(data, callback) {
   try {
     repairDetail(data, function (err, result, status) {
@@ -187,7 +225,22 @@ async function callRepairDetail(data, callback) {
   }
 }
 
-//fucntion callback get all member
+//fucntion callback detail
+async function callSpareDetail(data, callback) {
+  try {
+    spareDetail(data, function (err, result, status) {
+      // if (err || !result.length) return callback("error or no results");
+
+      // result = result.map((obj) => obj);
+
+      callback(null, result, status);
+    });
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+//fucntion callback get all detail
 async function callGetallDetail(callback) {
   try {
     getAllDetail("result", function (err, result, status) {
@@ -231,6 +284,51 @@ async function callGetByGarage(data, callback) {
   }
 }
 
+//fucntion callback get by garageID
+async function callGetByDetailID(data, callback) {
+  try {
+    getByDetailID(data , function (err, result, status) {
+      if (err || !result.length) return callback("error or no results");
+
+      result = result.map((obj) => obj);
+      // console.log(result)
+      callback(null, result, status);
+    });
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+//fucntion callback get Spare by detailID
+async function callGetSpareByDetailID(data, callback) {
+  try {
+    getSpareByDetailID(data , function (err, result, status) {
+      if (err || !result.length) return callback("error or no results");
+
+      result = result.map((obj) => obj);
+      // console.log(result)
+      callback(null, result, status);
+    });
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+//fucntion callback delete spare
+async function callDeleteSpare(data, callback) {
+  // console.log(data)
+  try {
+    deleteSpare(data, function (err, result, status) {
+      // console.log('test', result)
+
+      callback(null, result, status);
+    });
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+
 
 //fucntion callback Insert report
 async function callInsertReport(data, callback) {
@@ -263,6 +361,20 @@ async function callGetReport(callback) {
   }
 }
 
+//fucntion callback update detail
+async function callUpdateDetail(data, callback) {
+  // console.log(data)
+  try {
+    updateDetail(data, function (err, result, status) {
+      // console.log('test', result)
+
+      callback(null, result, status);
+    });
+  } catch (err) {
+    console.log(err);
+  }
+}
+
 
 module.exports = {
   callRegisterGarage,
@@ -280,5 +392,12 @@ module.exports = {
   callGetByGarage,
   callInsertReport,
   callGetReport,
-  callLoginUser
+  callLoginUser,
+  callGetByDetailID,
+  callSpareDetail,
+  callGetSpareByDetailID,
+  callDeleteSpare,
+  callUpdateDetail,
+  callGetMemberByGarage,
+  callGetGarageAll
 };

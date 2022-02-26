@@ -5,6 +5,7 @@ const {
   callRegisterMember,
   callGetMember,
   callDeleteMember,
+  callGetMemberByGarage,
 } = require("../services/funcCallback");
 const responseCode = require("../configs/responseCode");
 
@@ -43,13 +44,13 @@ router.post("/insert", async (request, response, next) => {
       if (status == responseCode.SUCCESS) {
         response.json({
           code: 200,
-          message: "insert member success",
+          message: "สมัครสมาชิกให้ลูกค้าเรียบร้อย",
           data: datas,
         });
       } else {
         response.json({
           code: 204,
-          message: "มี member นี้แล้ว",
+          message: "มีรหัสลูกค้านี้อยู่แล้ว!",
         });
       }
     });
@@ -64,6 +65,31 @@ router.get("/getmember", (request, response, next) => {
   // console.log(data)
   try {
     callGetMember(data, function (err, datas, status) {
+      if (status == responseCode.SUCCESS) {
+        response.json({
+          code: 200,
+          message: "get data success",
+          total: datas.length,
+          data: datas,
+        });
+      } else {
+        response.json({
+          code: 500,
+          message: "ไม่มี UsesID นี้อยู่ในตาราง",
+        });
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+// Get One Member By Garage
+router.get("/getmember/member-regis", (request, response, next) => {
+  let data = request.query;
+  console.log(data)
+  try {
+    callGetMemberByGarage(data, function (err, datas, status) {
       if (status == responseCode.SUCCESS) {
         response.json({
           code: 200,

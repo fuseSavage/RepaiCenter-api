@@ -10,7 +10,7 @@ dotenv.config({
 module.exports = {
 
   JWT_SECRET: 'secretRepairJWT',
-  EXPIRE_TOKEN: 604800,
+  EXPIRE_TOKEN: 30,
   EXPIRE_TOKEN_MEMBER: 604800,
 
   HOST: "localhost",

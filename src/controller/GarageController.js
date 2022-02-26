@@ -6,6 +6,7 @@ const {
   callGetGarage,
   callUpdateGarage,
   callDeleteGarage,
+  callGetGarageAll,
 } = require("../services/funcCallback");
 const responseCode = require("../configs/responseCode");
 
@@ -40,6 +41,25 @@ router.post("/insert", async (request, response, next) => {
 router.get("/all", (request, response, next) => {
   try {
     callGetallGarage(function (err, datas, status) {
+      //   console.log(status);
+      if (status == responseCode.SUCCESS) {
+        response.json({
+          code: 200,
+          message: "get all success",
+          total: datas.length,
+          data: datas,
+        });
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+// Get Garage All 
+router.get("/all-repair", (request, response, next) => {
+  try {
+    callGetGarageAll(function (err, datas, status) {
       //   console.log(status);
       if (status == responseCode.SUCCESS) {
         response.json({

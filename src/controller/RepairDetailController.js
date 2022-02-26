@@ -5,22 +5,28 @@ const {
   callGetallDetail,
   callGetByMember,
   callGetByGarage,
+  callGetByDetailID,
+  callSpareDetail,
+  callGetSpareByDetailID,
+  callDeleteSpare,
+  callUpdateDetail,
 } = require("../services/funcCallback");
 const responseCode = require("../configs/responseCode");
 
 const router = express.Router();
 
-// Insert Member
+// Insert Details
 router.post("/insert", async (request, response, next) => {
   try {
     let data = request.body;
+    // console.log('555',data)
 
     callRepairDetail(data, function (err, datas, status) {
       if (status == responseCode.SUCCESS) {
         response.json({
           code: 200,
           message: "insert success",
-          data: datas,
+          data: data,
         });
       } else {
         response.json({
@@ -37,7 +43,7 @@ router.post("/insert", async (request, response, next) => {
 // Get All Detail
 router.get("/all", (request, response, next) => {
   try {
-    callGetallDetail( function (err, datas, status) {
+    callGetallDetail(function (err, datas, status) {
       //   console.log(status);
       if (status == responseCode.SUCCESS) {
         response.json({
@@ -55,8 +61,8 @@ router.get("/all", (request, response, next) => {
 
 // Get By Member
 router.get("/getbymember", (request, response, next) => {
-  let data = request.body;
-  // console.log(data)
+  let data = request.query;
+  console.log(data)
   try {
     callGetByMember(data, function (err, datas, status) {
       if (status == responseCode.SUCCESS) {
@@ -78,10 +84,10 @@ router.get("/getbymember", (request, response, next) => {
   }
 });
 
-// Get By Member
+// Get By Garage
 router.get("/getbygarage", (request, response, next) => {
-  let data = request.body;
-  // console.log(data)
+  let data = request.query;
+  // console.log("data", data);
   try {
     callGetByGarage(data, function (err, datas, status) {
       if (status == responseCode.SUCCESS) {
@@ -95,6 +101,133 @@ router.get("/getbygarage", (request, response, next) => {
         response.json({
           code: 500,
           message: "ไม่มี garage นี้อยู่ในตาราง",
+          data: null,
+        });
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+// Get By GarageID
+router.get("/getbydetailID", (request, response, next) => {
+  let data = request.query;
+  console.log("data", data);
+  try {
+    callGetByDetailID(data, function (err, datas, status) {
+      if (status == responseCode.SUCCESS) {
+        response.json({
+          code: 200,
+          message: "get data success",
+          data: datas,
+        });
+      } else {
+        response.json({
+          code: 500,
+          message: "ไม่มี garage นี้อยู่ในตาราง",
+          data: null,
+        });
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+// Insert Details
+router.post("/insert-spare", async (request, response, next) => {
+  try {
+    let data = request.body;
+    // console.log('spare',data)
+
+    callSpareDetail(data, function (err, datas, status) {
+      if (status == responseCode.SUCCESS) {
+        response.json({
+          code: 200,
+          message: "insert spare success",
+          data: data,
+        });
+      } else {
+        response.json({
+          code: 204,
+          message: "sql is not working!!",
+        });
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+
+// Get By spare GarageID
+router.get("/getspare-detailid", (request, response, next) => {
+  let data = request.query;
+  // console.log("data", data);
+  try {
+    callGetSpareByDetailID(data, function (err, datas, status) {
+      if (status == responseCode.SUCCESS) {
+        response.json({
+          code: 200,
+          message: "get data success",
+          data: datas,
+        });
+      } else {
+        response.json({
+          code: 500,
+          message: "ไม่มี garage นี้อยู่ในตาราง",
+          data: null,
+        });
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+router.delete("/delete-spare", async (request, response, next) => {
+  try {
+    let data = request.body;
+    console.log('555',data)
+
+    callDeleteSpare(data, function (err, datas, status) {
+      if (status == responseCode.SUCCESS) {
+        response.json({
+          code: 200,
+          message: "ลบสำเร็จ",
+          data: data,
+        });
+      } else {
+        response.json({
+          code: 204,
+          message: "sql is not working!!",
+        });
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+// Update Garage
+router.put("/update-detail", (request, response, next) => {
+  let data = request.body;
+  // console.log(data)
+  try {
+    callUpdateDetail(data, function (err, datas, status) {
+      // console.log(status)
+      if (status == responseCode.SUCCESS) {
+        response.json({
+          code: 200,
+          message: "Update  success",
+          total: datas.length,
+          data: datas,
+        });
+      } else {
+        response.json({
+          code: 400,
+          message: "not success",
         });
       }
     });

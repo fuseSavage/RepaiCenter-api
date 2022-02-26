@@ -20,12 +20,14 @@ module.exports = {
         on_time varchar(100),
         off_time varchar(100),
         tel varchar(30),
+        confirmation varchar(100),
     
         PRIMARY KEY (garageID)
   )`,
 
   member: `CREATE TABLE member(
       member_tel varchar(100),
+      garageID varchar(100),
         party varchar(100),
         member_name varchar(255),
         member_ads varchar(255),
@@ -40,11 +42,18 @@ module.exports = {
         garageID varchar(255),
         member_tel varchar(100), 
         device_type varchar(255),
-        device varchar(255),
-        details varchar(255),
-        repair_date varchar(255),
+        car_number varchar(10),
+        car_province varchar(255),
+        brand varchar(100),
+        model varchar(100),
+        kilo_number varchar(10),
+        repair_details varchar(255),
+        repair_date varchar(100),
+        spare_parts_list varchar(255),
         status varchar(100),
         price int(10),
+        status_payment varchar(100),
+        equipment varchar(100),
 
         PRIMARY KEY (detailsID),
         FOREIGN KEY (member_tel) REFERENCES member(member_tel),
@@ -62,4 +71,15 @@ module.exports = {
 
         PRIMARY KEY (reportID)
   )`,
+
+  spare: `CREATE TABLE spare(
+      spareID int(10) NOT NULL AUTO_INCREMENT,
+      detailsID int(10),
+      spare varchar(255),
+      member_tel varchar(100), 
+      
+      PRIMARY KEY (spareID),
+      FOREIGN KEY (member_tel) REFERENCES member(member_tel),
+      FOREIGN KEY (detailsID) REFERENCES repairdetails(detailsID)
+)`,
 };

@@ -41,6 +41,7 @@ router.post("/accesstoken", async (request, response, next) => {
           },
           userData: tokenData,
         });
+        
       } else {
         response.json({
           code: 204,
@@ -76,6 +77,7 @@ router.post("/login", async (request, response, next) => {
         });
 
         response.json({
+          _auth: true,
           code: 200,
           message: "login success",
           data: {
@@ -85,18 +87,32 @@ router.post("/login", async (request, response, next) => {
           userData: tokenData,
         });
 
-        //seve user token
-        // user.token = token
+        request.session = [token, tokenData];
+        
       } else if (status == responseCode.SUCCESS_NO_CONTENT) {
         response.json({
           code: 204,
-          message: "Incorrect Email and/or Password!"
+          message: "Incorrect Email and/or Password!",
         });
-      }
-      else {
+      } else if (status == responseCode.SUCCESS_ACCEPTED) {
         response.json({
-          code: 204,
-          message: "login is not success"
+          _auth: true,
+          code: 202,
+          message: "Admin Login user",
+          userData: {
+            userId: datas.garageID,
+            email: datas.email,
+          },
+        });
+      } else if (status == responseCode.SUCCESS_NO_APPROVE) {
+        response.json({
+          code: 205,
+          message: "Confirmation is Non-approved!",
+        });
+      } else {
+        response.json({
+          code: 400,
+          message: "login is not success",
         });
       }
     });
@@ -106,7 +122,17 @@ router.post("/login", async (request, response, next) => {
   }
 });
 
-router.delete("/accesstoken", async (request, response) => {
+router.get("/login", async (request, response) => {
+  const test = request.session;
+  console.log(test);
+  response.json({
+    code: 200,
+    message: "Destroy accesstoken success",
+    data: response.session,
+  });
+});
+
+router.delete("/logout", async (request, response) => {
   response.json({
     code: 200,
     message: "Destroy accesstoken success",
