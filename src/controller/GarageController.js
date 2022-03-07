@@ -7,6 +7,7 @@ const {
   callUpdateGarage,
   callDeleteGarage,
   callGetGarageAll,
+  callApproveGarage
 } = require("../services/funcCallback");
 const responseCode = require("../configs/responseCode");
 
@@ -106,6 +107,32 @@ router.post("/update", (request, response, next) => {
   // console.log(data)
   try {
     callUpdateGarage(data, function (err, datas, status) {
+      // console.log(status)
+      if (status == responseCode.SUCCESS) {
+        response.json({
+          code: 200,
+          message: "Update garage success",
+          total: datas.length,
+          data: datas,
+        });
+      } else {
+        response.json({
+          code: 400,
+          message: "Update garage not success",
+        });
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+// Approve
+router.put("/approve", (request, response, next) => {
+  let data = request.body;
+  console.log(data)
+  try {
+    callApproveGarage(data, function (err, datas, status) {
       // console.log(status)
       if (status == responseCode.SUCCESS) {
         response.json({

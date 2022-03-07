@@ -10,8 +10,11 @@ const {
   callGetSpareByDetailID,
   callDeleteSpare,
   callUpdateDetail,
+  callGetAllSpare,
 } = require("../services/funcCallback");
 const responseCode = require("../configs/responseCode");
+
+const { pushMessage } = require('../services/lineApi');
 
 const router = express.Router();
 
@@ -160,6 +163,30 @@ router.post("/insert-spare", async (request, response, next) => {
   }
 });
 
+// Get By spare All
+router.get("/getallspare", (request, response, next) => {
+  // let data = request.query;
+  // console.log("data", data);
+  try {
+    callGetAllSpare("data", function (err, datas, status) {
+      if (status == responseCode.SUCCESS) {
+        response.json({
+          code: 200,
+          message: "get data success",
+          data: datas,
+        });
+      } else {
+        response.json({
+          code: 500,
+          message: "ไม่มี data นี้อยู่ในตาราง",
+          data: null,
+        });
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+});
 
 // Get By spare GarageID
 router.get("/getspare-detailid", (request, response, next) => {
@@ -176,7 +203,7 @@ router.get("/getspare-detailid", (request, response, next) => {
       } else {
         response.json({
           code: 500,
-          message: "ไม่มี garage นี้อยู่ในตาราง",
+          message: "ไม่มี data นี้อยู่ในตาราง",
           data: null,
         });
       }
@@ -217,6 +244,7 @@ router.put("/update-detail", (request, response, next) => {
   try {
     callUpdateDetail(data, function (err, datas, status) {
       // console.log(status)
+      pushMessage(datas)
       if (status == responseCode.SUCCESS) {
         response.json({
           code: 200,

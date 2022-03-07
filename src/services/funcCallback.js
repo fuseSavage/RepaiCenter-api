@@ -23,7 +23,9 @@ const {
   deleteSpare,
   updateDetail,
   getMemberByGarage,
-  getGarageAll
+  getGarageAll,
+  getAllSpare,
+  Approve,
 } = require("./database");
 
 //fucntion callback Insert Garage
@@ -110,6 +112,20 @@ async function callUpdateGarage(data, callback) {
   // console.log(data)
   try {
     updateGarage(data, function (err, result, status) {
+      // console.log('test', result)
+
+      callback(null, result, status);
+    });
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+//fucntion callback Approve Garage
+async function callApproveGarage(data, callback) {
+  // console.log(data)
+  try {
+    Approve(data, function (err, result, status) {
       // console.log('test', result)
 
       callback(null, result, status);
@@ -299,6 +315,21 @@ async function callGetByDetailID(data, callback) {
   }
 }
 
+//fucntion callback get Spare All
+async function callGetAllSpare(data, callback) {
+  try {
+    getAllSpare(data , function (err, result, status) {
+      if (err || !result.length) return callback("error or no results");
+
+      result = result.map((obj) => obj);
+      // console.log(result)
+      callback(null, result, status);
+    });
+  } catch (err) {
+    console.log(err);
+  }
+}
+
 //fucntion callback get Spare by detailID
 async function callGetSpareByDetailID(data, callback) {
   try {
@@ -399,5 +430,7 @@ module.exports = {
   callDeleteSpare,
   callUpdateDetail,
   callGetMemberByGarage,
-  callGetGarageAll
+  callGetGarageAll,
+  callGetAllSpare,
+  callApproveGarage
 };

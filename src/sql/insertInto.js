@@ -27,11 +27,11 @@ module.exports = {
   insert_member: `INSERT INTO member 
     (
         party,
-        garageID,
+        userIdLine,
+        imageUrl,
+        userName,
         member_tel,
         member_name,
-        member_ads,
-        shop_register,
         registration_date
     ) VALUES (?)`,
 

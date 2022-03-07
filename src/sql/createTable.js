@@ -27,11 +27,11 @@ module.exports = {
 
   member: `CREATE TABLE member(
       member_tel varchar(100),
-      garageID varchar(100),
         party varchar(100),
         member_name varchar(255),
-        member_ads varchar(255),
-        shop_register varchar(255),
+        userIdLine varchar(100),
+        imageUrl varchar(255),
+        userName varchar(100),
         registration_date varchar(100),
 
         PRIMARY KEY (member_tel)

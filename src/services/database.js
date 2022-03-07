@@ -120,7 +120,7 @@ async function registerGarage(data, callback) {
     data.on_time,
     data.off_time,
     data.tel,
-    data.confirmation
+    data.confirmation,
   ];
 
   // console.log(data.address_map)
@@ -172,7 +172,7 @@ async function registerGarage(data, callback) {
               data.on_time,
               data.off_time,
               data.tel,
-              data.confirmation
+              data.confirmation,
             ],
             (err, result) => {
               if (err) {
@@ -212,7 +212,7 @@ async function loginUser(data, callback) {
             // console.log(results[0].password);
             if (bcrypt.compareSync(data.password, results[0].password)) {
               // console.log("Successful", results[0].confirmation);
-              if (results[0].confirmation === 'approve') {
+              if (results[0].confirmation === "approve") {
                 callback(null, results[0], responseCode.SUCCESS);
               } else {
                 if (results[0].garageID === "admin") {
@@ -220,12 +220,9 @@ async function loginUser(data, callback) {
                   callback(null, results[0], responseCode.SUCCESS_ACCEPTED);
                 } else {
                   //  console.log("test", results[0].garageID);
-                   callback(null, null, responseCode.SUCCESS_NO_APPROVE);
+                  callback(null, null, responseCode.SUCCESS_NO_APPROVE);
                 }
-                
-               
               }
-              
             } else {
               // console.log("Incorrect Email and/or Password!");
               callback(null, null, responseCode.SUCCESS_NO_CONTENT);
@@ -266,10 +263,13 @@ async function loginUser(data, callback) {
 // get All Garage
 function getAllGarage(data, callback) {
   try {
-    db.query(`SELECT * FROM garage WHERE confirmation = 'approve' `, function (err, rows) {
-      if (err) return callback(err);
-      callback(null, rows, responseCode.SUCCESS);
-    });
+    db.query(
+      `SELECT * FROM garage WHERE confirmation = 'approve' `,
+      function (err, rows) {
+        if (err) return callback(err);
+        callback(null, rows, responseCode.SUCCESS);
+      }
+    );
   } catch (err) {
     console.log(err);
   }
@@ -339,6 +339,28 @@ function updateGarage(data, callback) {
   }
 }
 
+// Approve garage
+function Approve(data, callback) {
+  let sql = `UPDATE garage SET 
+    confirmation = "approve" WHERE garageID = "${data.garageID}"
+    `;
+  try {
+    // console.log(sql, data.garageID)
+
+    db.query(sql, (error, result) => {
+      if (error) {
+        // console.log("error",error);
+        callback(null, result, responseCode.ERROR_BAD_REQUEST);
+      } else {
+        // console.log("good");
+        callback(null, data, responseCode.SUCCESS);
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+}
+
 // Delete Garage
 function deleteGarage(data, callback) {
   // console.log(data)
@@ -379,31 +401,31 @@ function registerMember(data, callback) {
   let dateNow = today.toLocaleDateString();
   values = [
     data.party,
-    data.garageID,
+    data.userIdLine,
+    data.imageUrl,
+    data.userName,
     data.member_tel,
     data.member_name,
-    data.member_ads,
-    data.shop_register,
     dateNow,
   ];
   try {
-    let sql = `SELECT member_tel FROM member`;
+    let sql = `SELECT userIdLine FROM member`;
     db.query(sql, (error, result) => {
       if (error) {
         console.log("===>>> Error", error);
         ``;
       } else {
-        // console.log(result)
         let listUID = [];
         result.forEach((doc) => {
-          listUID.push(doc.member_tel);
+          listUID.push(doc.userIdLine);
         });
-
-        const check = listUID.includes(data.member_tel);
+        // console.log(listUID)
+        const check = listUID.includes(data.userIdLine);
         if (check === false) {
           db.query(insertInto.insert_member, [values], (err, result) => {
             if (err) {
-              return callback(err);
+              callback(null, values, responseCode.ERROR_DB_DUPLICATE);
+              console.log("Main error =>", err);
             } else {
               callback(null, values, responseCode.SUCCESS);
               console.log("insert success");
@@ -449,7 +471,6 @@ function getMemberByGarage(data, callback) {
     console.log(err);
   }
 }
-
 
 // Delete Member
 function deleteMember(data, callback) {
@@ -535,6 +556,22 @@ function spareDetail(data, callback) {
         }
       }
     );
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+// Get Spare By GarageID
+function getAllSpare(data, callback) {
+  try {
+    // console.log(detailID)
+    let sql = `SELECT * FROM spare`;
+
+    db.query(sql, function (err, rows) {
+      if (err) return callback(err);
+      // if (err) console.log(err);
+      callback(null, rows, responseCode.SUCCESS);
+    });
   } catch (err) {
     console.log(err);
   }
@@ -710,10 +747,30 @@ function updateDetail(data, callback) {
     db.query(sql, (error, result) => {
       if (error) {
         // console.log("error",error);
+
         callback(null, result, responseCode.ERROR_BAD_REQUEST);
       } else {
         // console.log("good");
-        callback(null, data, responseCode.SUCCESS);
+        db.query(
+          `SELECT a.device_type, a.car_number, a.car_province, a.brand, a.model, a.repair_date, a.status, a.price, a.status_payment, a.equipment,
+          b.member_tel, b.member_name, b.userIdLine, c.spare,
+          d.user_name, d.garage_name 
+          FROM repairdetails AS a 
+          INNER JOIN member AS b ON a.member_tel = b.member_tel 
+          INNER JOIN spare AS c ON a.detailsID = c.detailsID 
+          INNER JOIN garage AS d ON a.garageID = d.garageID 
+          WHERE a.detailsID = "${data.detailsID}" `,
+          (error, result) => {
+            if (error) {
+              console.log("error", error);
+            } else {
+              if (result) {
+                // console.log("result", result);
+                callback(null, result, responseCode.SUCCESS);
+              }
+            }
+          }
+        );
       }
     });
   } catch (err) {
@@ -745,4 +802,6 @@ module.exports = {
   deleteSpare,
   updateDetail,
   getMemberByGarage,
+  getAllSpare,
+  Approve,
 };

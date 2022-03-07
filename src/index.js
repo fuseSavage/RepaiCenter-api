@@ -29,6 +29,11 @@ app.use((req, res) => {
   })
 })
 
+// app.post("/webhook", (req, res) => { // <============= เพิ่มเข้ามาใหม่
+//   console.log('req.body =>', JSON.stringify(req.body,null,2)) //สิ่งที่ Line ส่งมา
+//   res.send("HTTP POST request sent to the webhook URL!")
+// })
+
 
 
 

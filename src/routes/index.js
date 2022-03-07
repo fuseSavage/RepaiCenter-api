@@ -7,6 +7,7 @@ const member = require("./member");
 const garage = require("./garage");
 const repairdetail = require("./repairdetail");
 const report = require("./report");
+const chat = require("./chat")
 
 const middleware = require("../middlewares/authentication");
 
@@ -18,6 +19,7 @@ router.get("/test", (req, res) => {
   console.log("test");
 });
 
+router.use(chat)
 router.use(authentication);
 router.use(member);
 router.use(garage);
