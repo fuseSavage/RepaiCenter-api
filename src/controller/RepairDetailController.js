@@ -14,7 +14,7 @@ const {
 } = require("../services/funcCallback");
 const responseCode = require("../configs/responseCode");
 
-const { pushMessage } = require('../services/lineApi');
+const { pushMessage } = require("../services/lineApi");
 
 const router = express.Router();
 
@@ -65,7 +65,7 @@ router.get("/all", (request, response, next) => {
 // Get By Member
 router.get("/getbymember", (request, response, next) => {
   let data = request.query;
-  console.log(data)
+  console.log(data);
   try {
     callGetByMember(data, function (err, datas, status) {
       if (status == responseCode.SUCCESS) {
@@ -216,7 +216,7 @@ router.get("/getspare-detailid", (request, response, next) => {
 router.delete("/delete-spare", async (request, response, next) => {
   try {
     let data = request.body;
-    console.log('555',data)
+    console.log("555", data);
 
     callDeleteSpare(data, function (err, datas, status) {
       if (status == responseCode.SUCCESS) {
@@ -244,7 +244,8 @@ router.put("/update-detail", (request, response, next) => {
   try {
     callUpdateDetail(data, function (err, datas, status) {
       // console.log(status)
-      pushMessage(datas)
+      // console.log('datas', datas.status)
+
       if (status == responseCode.SUCCESS) {
         response.json({
           code: 200,
@@ -252,6 +253,10 @@ router.put("/update-detail", (request, response, next) => {
           total: datas.length,
           data: datas,
         });
+
+        if (datas[0].status === "สำเร็จ") {
+          pushMessage(datas);
+        }
       } else {
         response.json({
           code: 400,
@@ -263,6 +268,5 @@ router.put("/update-detail", (request, response, next) => {
     console.log(err);
   }
 });
-
 
 module.exports = router;

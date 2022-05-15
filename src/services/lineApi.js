@@ -2,7 +2,7 @@ const request = require("request");
 const responseCode = require("../configs/responseCode");
 
 async function pushMessage(data) {
-  console.log("data in pushMessage ", data[0]);
+  // console.log("data in pushMessage ", data[0]);
   let headers = {
     "Content-Type": "application/json",
     Authorization:

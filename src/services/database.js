@@ -638,7 +638,7 @@ function getByMember(data, callback) {
     let sql = `SELECT * FROM repairdetails AS a 
     INNER JOIN member AS b ON a.member_tel = b.member_tel 
     INNER JOIN garage AS c ON a.garageID = c.garageID 
-    WHERE a.member_tel = ${memberTel} ORDER BY a.repair_date ASC `;
+    WHERE a.member_tel = ${memberTel} ORDER BY a.repair_date DESC `;
 
     db.query(sql, function (err, rows) {
       if (err) return callback(err);
@@ -658,7 +658,7 @@ function getByGarage(data, callback) {
     let sql = `SELECT * FROM repairdetails AS a 
     INNER JOIN member AS b ON a.member_tel = b.member_tel 
     INNER JOIN garage AS c ON a.garageID = c.garageID 
-    WHERE a.garageID = "${garageID}" ORDER BY repair_date ASC`;
+    WHERE a.garageID = "${garageID}" ORDER BY repair_date DESC`;
 
     db.query(sql, function (err, rows) {
       if (err) return callback(err);
